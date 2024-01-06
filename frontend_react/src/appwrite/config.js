@@ -1,5 +1,5 @@
 import conf from "../conf/conf";
-import { Client, Databases, Storage } from "appwrite";
+import { Client, Databases, Storage, Query, ID } from "appwrite";
 
 export class Service {
   client = new Client();
@@ -83,6 +83,89 @@ export class Service {
 
       return false;
     }
+  }
+
+  async getMovie(slug) {
+    try {
+      return await this.databases.getDocument(
+        conf.appwriteDatabaseId,
+        conf.appwriteCollectionId,
+        slug
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async getMovies(queries = [Query.equal("status", "active")]) {
+    try {
+      return await this.databases.listDocuments(
+        conf.appwriteDatabaseId,
+        conf.appwriteCollectionId,
+        queries
+      );
+    } catch (error) {
+      console.log(error);
+      return false;
+    }
+  }
+
+  // file upload services
+
+  async uploadImage(file) {
+    try {
+      return await this.bucket.createFile(
+        conf.appwriteImageBucketId,
+        ID.unique(),
+        file
+      );
+    } catch (error) {
+      console.log(error);
+      return false;
+    }
+  }
+
+  async deleteImage(fileId) {
+    try {
+      await this.bucket.deleteFile(conf.appwriteImageBucketId, fileId);
+
+      return true;
+    } catch (error) {
+      console.log(error);
+      return false;
+    }
+  }
+
+  async uploadVideo(file) {
+    try {
+      return await this.bucket.createFile(
+        conf.appwriteVideoBucketId,
+        ID.unique(),
+        file
+      );
+    } catch (error) {
+      console.log(error);
+      return false;
+    }
+  }
+
+  async deleteVideo(fileId) {
+    try {
+      await this.bucket.deleteFile(conf.appwriteVideoBucketId, fileId);
+
+      return true;
+    } catch (error) {
+      console.log(error);
+      return false;
+    }
+  }
+
+  getImageUrl(fileId) {
+    return this.bucket.getFilePreview(conf.appwriteImageBucketId, fileId);
+  }
+
+  getVideoUrl(fileId) {
+    return this.bucket.getFilePreview(conf.appwriteVideoBucketId, fileId);
   }
 }
 
